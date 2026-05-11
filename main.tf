@@ -32,8 +32,8 @@ resource "aws_subnet" "public" {
 
 # Private Subnets (For Nodes)
 resource "aws_subnet" "private" {
-  count = 2
-  vpc_id                  = aws_vpc.nahid_vpc.id
+  count             = 2
+  vpc_id            = aws_vpc.nahid_vpc.id
   cidr_block        = var.private_subnets[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
@@ -92,7 +92,12 @@ resource "aws_security_group" "nahid_cluster_sg" {
   name   = "nahid-cluster-sg"
   vpc_id = aws_vpc.nahid_vpc.id
 
-  egress { from_port = 0; to_port = 0; protocol = "-1"; cidr_blocks = ["0.0.0.0/0"] }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = { Name = "nahid-cluster-sg" }
 }
 
@@ -110,24 +115,29 @@ resource "aws_security_group" "nahid_node_sg" {
 
   ingress {
     description     = "Allow worker Kubelets and pods to receive communication from the cluster control plane"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     security_groups = [aws_security_group.nahid_cluster_sg.id]
   }
 
-  egress { from_port = 0; to_port = 0; protocol = "-1"; cidr_blocks = ["0.0.0.0/0"] }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = { Name = "nahid-node-sg" }
 }
 
 resource "aws_eks_cluster" "nahid" {
-  name     = var.cluster_name
-  role_arn = aws_iam_role.nahid_cluster_role.arn
+  name                      = var.cluster_name
+  role_arn                  = aws_iam_role.nahid_cluster_role.arn
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   vpc_config {
-    subnet_ids         = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
-    security_group_ids = [aws_security_group.nahid_cluster_sg.id]
+    subnet_ids              = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
+    security_group_ids      = [aws_security_group.nahid_cluster_sg.id]
     endpoint_private_access = true
     endpoint_public_access  = true
   }
@@ -150,7 +160,7 @@ resource "aws_eks_node_group" "nahid" {
   instance_types = ["t3.medium"] # t3 is generally better than t2 for EKS
 
   remote_access {
-    ec2_ssh_key = var.ssh_key_name
+    ec2_ssh_key               = var.ssh_key_name
     source_security_group_ids = [aws_security_group.nahid_node_sg.id]
   }
 }
