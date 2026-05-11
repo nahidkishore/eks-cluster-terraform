@@ -13,7 +13,7 @@ variable "cluster_name" {
 variable "ssh_key_name" {
   description = "The name of the SSH key pair to use for instances"
   type        = string
-  default     = "nahid-ssh-key"
+  default     = "server-key"
 }
 
 variable "vpc_cidr" {
